@@ -48,48 +48,28 @@ const WordTree: React.FC<WordTreeProps> = ({
       <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-            Центр Шифров
+            <Icon name="TreePine" size={28} />
+            Дерево слов
           </h1>
-
-          <div className="flex items-center gap-3">
-            <Button
-              onClick={handleReset}
-              variant="outline"
-              size="sm"
-              className="flex items-center gap-2"
-            >
+          <div className="flex items-center gap-2">
+            <Button onClick={handleReset} variant="outline" size="sm">
               <Icon name="RotateCcw" size={16} />
               Сброс
             </Button>
-
             {isAdmin ? (
-              <div className="flex items-center gap-2">
-                <Button
-                  onClick={onOpenAdminPanel}
-                  variant="default"
-                  size="sm"
-                  className="flex items-center gap-2"
-                >
+              <div className="flex gap-2">
+                <Button onClick={onOpenAdminPanel} variant="outline" size="sm">
                   <Icon name="Settings" size={16} />
                   Панель
                 </Button>
-                <Button
-                  onClick={onLogout}
-                  variant="ghost"
-                  size="sm"
-                  className="text-gray-600"
-                >
+                <Button onClick={onLogout} variant="ghost" size="sm">
                   <Icon name="LogOut" size={16} />
+                  Выход
                 </Button>
               </div>
             ) : (
-              <Button
-                onClick={onShowAdminAuth}
-                variant="ghost"
-                size="sm"
-                className="flex items-center gap-2 text-gray-600"
-              >
-                <Icon name="Lock" size={16} />
+              <Button onClick={onShowAdminAuth} variant="ghost" size="sm">
+                <Icon name="Shield" size={16} />
                 Админ
               </Button>
             )}

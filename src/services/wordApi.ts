@@ -48,7 +48,10 @@ class WordAPI {
       }
 
       // Если данных нет, возвращаем дефолтные
-      await this.saveWords(this.globalData);
+      sessionStorage.setItem(
+        GLOBAL_STORAGE_KEY,
+        JSON.stringify(this.globalData),
+      );
       return this.globalData;
     } catch (error) {
       console.error("Ошибка загрузки слов:", error);
@@ -56,20 +59,27 @@ class WordAPI {
     }
   }
 
-  async saveWords(words: Word[]): Promise<void> {
+  async updateWords(words: Word[]): Promise<void> {
     try {
       // Сохраняем в sessionStorage (имитация глобального API)
       sessionStorage.setItem(GLOBAL_STORAGE_KEY, JSON.stringify(words));
       this.globalData = words;
-
-      // Уведомляем все открытые вкладки об изменениях
-      window.dispatchEvent(
-        new CustomEvent("wordsUpdated", {
-          detail: { words },
-        }),
-      );
     } catch (error) {
-      console.error("Ошибка сохранения слов:", error);
+      console.error("Ошибка обновления слов:", error);
+      throw error;
+    }
+  }
+
+  async updateWord(id: number, newWord: string): Promise<void> {
+    try {
+      const words = await this.getWords();
+      const updatedWords = words.map((w) =>
+        w.id === id ? { ...w, word: newWord } : w,
+      );
+      await this.updateWords(updatedWords);
+    } catch (error) {
+      console.error("Ошибка обновления слова:", error);
+      throw error;
     }
   }
 
@@ -97,5 +107,6 @@ class WordAPI {
   }
 }
 
-export const wordApi = new WordAPI();
+const wordApi = new WordAPI();
+export default wordApi;
 export type { Word };

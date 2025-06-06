@@ -71,54 +71,76 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <Card className="w-96 max-h-[80vh] flex flex-col">
-        <CardHeader className="flex-shrink-0">
-          <div className="flex items-center justify-between">
+      <Card className="w-full max-w-2xl max-h-[80vh] overflow-y-auto">
+        <CardHeader>
+          <div className="flex justify-between items-center">
             <div>
-              <CardTitle className="text-xl font-montserrat">
-                Админ-панель
-              </CardTitle>
-              <CardDescription>Управление словами дерева</CardDescription>
+              <CardTitle>Панель администратора</CardTitle>
+              <CardDescription>Управление словами в дереве</CardDescription>
             </div>
-            <Button variant="ghost" size="sm" onClick={onClose}>
+            <Button onClick={onClose} variant="ghost" size="sm">
               <Icon name="X" size={20} />
             </Button>
           </div>
         </CardHeader>
-
-        <CardContent className="flex-1 overflow-y-auto">
+        <CardContent className="space-y-6">
           {/* Добавление нового слова */}
-          <div className="flex space-x-2 mb-4">
-            <Input
-              value={newWord}
-              onChange={(e) => setNewWord(e.target.value)}
-              placeholder="Новое слово"
-              onKeyPress={(e) => e.key === "Enter" && handleAddWord()}
-            />
-            <Button onClick={handleAddWord} disabled={!newWord.trim()}>
-              <Icon name="Plus" size={16} />
-            </Button>
+          <div className="space-y-2">
+            <h3 className="font-semibold">Добавить новое слово</h3>
+            <div className="flex gap-2">
+              <Input
+                value={newWord}
+                onChange={(e) => setNewWord(e.target.value)}
+                placeholder="Введите новое слово..."
+                onKeyPress={(e) => e.key === "Enter" && handleAddWord()}
+              />
+              <Button onClick={handleAddWord} disabled={!newWord.trim()}>
+                <Icon name="Plus" size={16} />
+                Добавить
+              </Button>
+            </div>
           </div>
 
-          {/* Список слов */}
+          {/* Список существующих слов */}
           <div className="space-y-2">
-            {words.map((word, index) => (
-              <WordItem
-                key={word.id}
-                word={word}
-                index={index + 1}
-                onUpdate={handleUpdateWord}
-                onRemove={handleRemoveWord}
-                onAddHint={handleAddHint}
-                onRemoveHint={handleRemoveHint}
-              />
-            ))}
-
-            {words.length === 0 && (
-              <p className="text-gray-500 text-center py-4">
-                Добавьте первое слово для дерева
-              </p>
-            )}
+            <h3 className="font-semibold">Существующие слова</h3>
+            <div className="space-y-2 max-h-60 overflow-y-auto">
+              {words.map((word) => (
+                <div
+                  key={word.id}
+                  className="flex items-center justify-between p-3 border rounded-lg"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="font-mono text-sm bg-gray-100 px-2 py-1 rounded">
+                      #{word.id}
+                    </span>
+                    <Input
+                      value={word.word}
+                      onChange={(e) =>
+                        handleUpdateWord(word.id, e.target.value)
+                      }
+                      className="font-medium"
+                    />
+                  </div>
+                  <div className="flex gap-1">
+                    <Button
+                      onClick={() => handleAddHint(word.id)}
+                      variant="outline"
+                      size="sm"
+                    >
+                      <Icon name="Lightbulb" size={14} />
+                    </Button>
+                    <Button
+                      onClick={() => handleRemoveWord(word.id)}
+                      variant="destructive"
+                      size="sm"
+                    >
+                      <Icon name="Trash2" size={14} />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </CardContent>
       </Card>
