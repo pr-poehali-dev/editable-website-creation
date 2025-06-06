@@ -53,8 +53,8 @@ const WordTree: React.FC<WordTreeProps> = ({
       <div className="sticky top-0 bg-white/90 backdrop-blur-sm border-b z-40 p-4">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-montserrat font-bold text-primary">
-              Дерево Слов
+            <h1 className="text-2xl font-montserrat font-bold text-amber-600">
+              Центр Шифров
             </h1>
             <div className="flex items-center space-x-4 mt-2">
               <div className="bg-gray-200 rounded-full h-2 w-32">
