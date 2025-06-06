@@ -117,7 +117,7 @@ const TreeNode: React.FC<TreeNodeProps> = ({
               ) : isUnlocked ? (
                 <form onSubmit={handleSubmit} className="text-center">
                   <div className="mb-4">
-                    <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2 bg-orange-200">
+                    <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2 bg-slate-200">
                       <Icon
                         name="HelpCircle"
                         size={24}
