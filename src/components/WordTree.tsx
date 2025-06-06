@@ -1,20 +1,26 @@
 import React, { useState, useEffect } from "react";
 import TreeNode from "./TreeNode";
 import HintFlag from "./HintFlag";
+import { Button } from "@/components/ui/button";
+import Icon from "@/components/ui/icon";
 import { Word } from "@/services/wordApi";
 
 interface WordTreeProps {
   words: Word[];
   isAdmin: boolean;
   onUpdateWord: (id: number, newWord: string) => void;
-  onUpdateWords: (words: Word[]) => void;
+  onOpenAdminPanel: () => void;
+  onShowAdminAuth: () => void;
+  onLogout: () => void;
 }
 
 const WordTree: React.FC<WordTreeProps> = ({
   words,
   isAdmin,
   onUpdateWord,
-  onUpdateWords,
+  onOpenAdminPanel,
+  onShowAdminAuth,
+  onLogout,
 }) => {
   const [completedNodes, setCompletedNodes] = useState<Set<number>>(new Set());
   const [visibleHints, setVisibleHints] = useState<Set<number>>(new Set());
@@ -31,61 +37,113 @@ const WordTree: React.FC<WordTreeProps> = ({
     }
   };
 
-  const handleUpdateHint = (wordId: number, hint: Word["hint"]) => {
-    const updatedWords = words.map((word) =>
-      word.id === wordId ? { ...word, hint } : word,
-    );
-    onUpdateWords(updatedWords);
-  };
-
-  const handleDeleteHint = (wordId: number) => {
-    const updatedWords = words.map((word) =>
-      word.id === wordId ? { ...word, hint: undefined } : word,
-    );
-    onUpdateWords(updatedWords);
-    setVisibleHints((prev) => {
-      const newSet = new Set(prev);
-      newSet.delete(wordId);
-      return newSet;
-    });
+  const handleReset = () => {
+    setCompletedNodes(new Set());
+    setVisibleHints(new Set());
   };
 
   return (
-    <div className="relative min-h-screen py-8">
-      <div className="flex flex-col items-center space-y-8">
-        {words.map((word, index) => {
-          const isUnlocked = index === 0 || completedNodes.has(word.id - 1);
-          const isCompleted = completedNodes.has(word.id);
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      {/* Верхняя панель */}
+      <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-10">
+        <div className="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
+          <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+            <Icon name="TreePine" size={28} className="text-green-600" />
+            Дерево слов
+          </h1>
 
-          return (
-            <TreeNode
-              key={word.id}
-              id={word.id}
-              correctWord={word.word}
-              isUnlocked={isUnlocked}
-              isCompleted={isCompleted}
-              onComplete={handleNodeComplete}
-              isAdmin={isAdmin}
-              onUpdateWord={onUpdateWord}
-            />
-          );
-        })}
+          <div className="flex items-center gap-3">
+            <Button
+              onClick={handleReset}
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2"
+            >
+              <Icon name="RotateCcw" size={16} />
+              Сброс
+            </Button>
+
+            {isAdmin ? (
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={onOpenAdminPanel}
+                  variant="default"
+                  size="sm"
+                  className="flex items-center gap-2"
+                >
+                  <Icon name="Settings" size={16} />
+                  Панель
+                </Button>
+                <Button
+                  onClick={onLogout}
+                  variant="ghost"
+                  size="sm"
+                  className="text-gray-600"
+                >
+                  <Icon name="LogOut" size={16} />
+                </Button>
+              </div>
+            ) : (
+              <Button
+                onClick={onShowAdminAuth}
+                variant="ghost"
+                size="sm"
+                className="flex items-center gap-2 text-gray-600"
+              >
+                <Icon name="Lock" size={16} />
+                Админ
+              </Button>
+            )}
+          </div>
+        </div>
       </div>
 
-      {/* Отображение подсказок */}
-      {words.map((word) => {
-        if (!word.hint || !visibleHints.has(word.id)) return null;
+      {/* Основной контент */}
+      <div className="max-w-4xl mx-auto p-8">
+        {words.length === 0 ? (
+          <div className="text-center py-12">
+            <Icon
+              name="TreePine"
+              size={48}
+              className="mx-auto text-gray-400 mb-4"
+            />
+            <p className="text-gray-500 text-lg">Дерево слов пусто</p>
+            <p className="text-gray-400 text-sm mt-2">
+              Войдите в админ-панель, чтобы добавить слова
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {words.map((word, index) => (
+              <div key={word.id} className="relative">
+                <TreeNode
+                  word={word}
+                  isCompleted={completedNodes.has(word.id)}
+                  isDisabled={
+                    index > 0 && !completedNodes.has(words[index - 1].id)
+                  }
+                  onComplete={handleNodeComplete}
+                  onUpdateWord={onUpdateWord}
+                  isAdmin={isAdmin}
+                />
 
-        return (
-          <HintFlag
-            key={`hint-${word.id}`}
-            hint={word.hint}
-            isAdmin={isAdmin}
-            onUpdateHint={(hint) => handleUpdateHint(word.id, hint)}
-            onDeleteHint={() => handleDeleteHint(word.id)}
-          />
-        );
-      })}
+                {word.hint && visibleHints.has(word.id) && (
+                  <HintFlag
+                    hint={word.hint}
+                    onClose={() => {
+                      setVisibleHints((prev) => {
+                        const newSet = new Set(prev);
+                        newSet.delete(word.id);
+                        return newSet;
+                      });
+                    }}
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
