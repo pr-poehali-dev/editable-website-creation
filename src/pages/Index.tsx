@@ -4,47 +4,54 @@ import WordTree from "@/components/WordTree";
 import AdminPanel from "@/components/AdminPanel";
 import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
-
-interface Word {
-  id: number;
-  word: string;
-}
+import { wordApi, Word } from "@/services/wordApi";
 
 const Index = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [showAdminAuth, setShowAdminAuth] = useState(false);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
-  const [words, setWords] = useState<Word[]>([
-    { id: 1, word: "солнце" },
-    { id: 2, word: "луна" },
-    { id: 3, word: "звезды" },
-  ]);
+  const [words, setWords] = useState<Word[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Сохранение в localStorage
+  // Загрузка из глобального API
   useEffect(() => {
-    const savedWords = localStorage.getItem("wordTreeWords");
-    if (savedWords) {
-      setWords(JSON.parse(savedWords));
-    }
+    const loadWords = async () => {
+      try {
+        const globalWords = await wordApi.getWords();
+        setWords(globalWords);
+      } catch (error) {
+        console.error("Ошибка загрузки:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadWords();
+
+    // Подписка на изменения от других устройств/вкладок
+    const unsubscribe = wordApi.onWordsUpdated((newWords) => {
+      setWords(newWords);
+    });
+
+    return unsubscribe;
   }, []);
-
-  useEffect(() => {
-    localStorage.setItem("wordTreeWords", JSON.stringify(words));
-  }, [words]);
 
   const handleAdminAuth = () => {
     setIsAdmin(true);
     setShowAdminAuth(false);
   };
 
-  const handleUpdateWords = (newWords: Word[]) => {
+  const handleUpdateWords = async (newWords: Word[]) => {
     setWords(newWords);
+    await wordApi.saveWords(newWords);
   };
 
-  const handleUpdateWord = (id: number, newWord: string) => {
-    setWords((prev) =>
-      prev.map((w) => (w.id === id ? { ...w, word: newWord } : w)),
+  const handleUpdateWord = async (id: number, newWord: string) => {
+    const updatedWords = words.map((w) =>
+      w.id === id ? { ...w, word: newWord } : w,
     );
+    setWords(updatedWords);
+    await wordApi.saveWords(updatedWords);
   };
 
   const handleLogout = () => {
@@ -54,25 +61,40 @@ const Index = () => {
 
   return (
     <div className="min-h-screen">
-      {/* Основной контент */}
-      <WordTree
-        words={words}
-        isAdmin={isAdmin}
-        onOpenAdminPanel={() => setShowAdminPanel(true)}
-        onUpdateWord={handleUpdateWord}
-        onShowAdminAuth={() => setShowAdminAuth(true)}
-        onLogout={handleLogout}
-      />
+      {loading ? (
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <Icon
+              name="Loader"
+              size={32}
+              className="animate-spin text-primary mx-auto mb-2"
+            />
+            <p className="text-gray-600">Загрузка дерева слов...</p>
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* Основной контент */}
+          <WordTree
+            words={words}
+            isAdmin={isAdmin}
+            onOpenAdminPanel={() => setShowAdminPanel(true)}
+            onUpdateWord={handleUpdateWord}
+            onShowAdminAuth={() => setShowAdminAuth(true)}
+            onLogout={handleLogout}
+          />
 
-      {/* Модальные окна */}
-      {showAdminAuth && <AdminAuth onAuthenticated={handleAdminAuth} />}
+          {/* Модальные окна */}
+          {showAdminAuth && <AdminAuth onAuthenticated={handleAdminAuth} />}
 
-      {showAdminPanel && (
-        <AdminPanel
-          words={words}
-          onUpdateWords={handleUpdateWords}
-          onClose={() => setShowAdminPanel(false)}
-        />
+          {showAdminPanel && (
+            <AdminPanel
+              words={words}
+              onUpdateWords={handleUpdateWords}
+              onClose={() => setShowAdminPanel(false)}
+            />
+          )}
+        </>
       )}
     </div>
   );
