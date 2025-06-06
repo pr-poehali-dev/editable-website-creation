@@ -4,39 +4,33 @@ import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
 
 interface TreeNodeProps {
-  word: {
-    id: number;
-    word: string;
-    hint?: {
-      text: string;
-      position: { x: number; y: number };
-      size: "small" | "medium" | "large";
-    };
-  };
+  id: number;
+  correctWord: string;
+  isUnlocked: boolean;
   isCompleted: boolean;
-  isDisabled: boolean;
   onComplete: (id: number, word: string) => void;
   isAdmin: boolean;
   onUpdateWord: (id: number, newWord: string) => void;
 }
 
 const TreeNode: React.FC<TreeNodeProps> = ({
-  word,
+  id,
+  correctWord,
+  isUnlocked,
   isCompleted,
-  isDisabled,
   onComplete,
   isAdmin,
   onUpdateWord,
 }) => {
   const [userInput, setUserInput] = useState("");
   const [isEditing, setIsEditing] = useState(false);
-  const [editWord, setEditWord] = useState(word.word);
+  const [editWord, setEditWord] = useState(correctWord);
   const [showFeedback, setShowFeedback] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (userInput.toLowerCase().trim() === word.word.toLowerCase().trim()) {
-      onComplete(word.id, userInput);
+    if (userInput.toLowerCase().trim() === correctWord.toLowerCase().trim()) {
+      onComplete(id, userInput);
       setShowFeedback(true);
       setTimeout(() => setShowFeedback(false), 2000);
     } else {
@@ -47,109 +41,128 @@ const TreeNode: React.FC<TreeNodeProps> = ({
   };
 
   const handleEditSave = () => {
-    onUpdateWord(word.id, editWord);
+    onUpdateWord(id, editWord);
     setIsEditing(false);
   };
 
   return (
     <div
-      className={`relative transition-all duration-500 ${!isDisabled ? "opacity-100" : "opacity-40"}`}
+      className={`relative transition-all duration-500 ${isUnlocked ? "opacity-100" : "opacity-40"}`}
     >
-      <div className="bg-white rounded-lg shadow-lg p-6 border-2 border-gray-200">
-        {/* Номер узла */}
-        <div className="absolute -top-3 -left-3 w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold text-sm">
-          {word.id}
-        </div>
+      {/* Ветка дерева */}
+      <div className="flex flex-col items-center">
+        {id > 1 && (
+          <div className="w-1 h-16 bg-gradient-to-b from-primary/60 to-primary/30 mb-4"></div>
+        )}
 
-        {/* Админ режим редактирования */}
-        {isAdmin && (
-          <div className="mb-4 p-2 bg-yellow-50 rounded border">
-            {isEditing ? (
-              <div className="flex gap-2">
-                <Input
-                  value={editWord}
-                  onChange={(e) => setEditWord(e.target.value)}
-                  className="flex-1"
-                />
-                <Button onClick={handleEditSave} size="sm">
+        {/* Узел */}
+        <div
+          className={`relative bg-white rounded-full p-8 shadow-lg border-4 transition-all duration-300 ${
+            isCompleted
+              ? "border-green-400 bg-green-50"
+              : isUnlocked
+                ? "border-primary"
+                : "border-gray-300"
+          }`}
+        >
+          {/* Админ-кнопка редактирования */}
+          {isAdmin && !isEditing && (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="absolute -top-2 -right-2 w-8 h-8 rounded-full"
+              onClick={() => setIsEditing(true)}
+            >
+              <Icon name="Edit" size={16} />
+            </Button>
+          )}
+
+          {/* Режим редактирования админа */}
+          {isAdmin && isEditing ? (
+            <div className="flex flex-col items-center space-y-2">
+              <Input
+                value={editWord}
+                onChange={(e) => setEditWord(e.target.value)}
+                className="text-center w-32"
+                placeholder="Правильное слово"
+              />
+              <div className="flex space-x-2">
+                <Button size="sm" onClick={handleEditSave}>
                   <Icon name="Check" size={16} />
                 </Button>
                 <Button
-                  onClick={() => setIsEditing(false)}
-                  variant="outline"
                   size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setIsEditing(false);
+                    setEditWord(correctWord);
+                  }}
                 >
                   <Icon name="X" size={16} />
                 </Button>
               </div>
-            ) : (
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">
-                  Правильное слово: {word.word}
-                </span>
-                <Button
-                  onClick={() => setIsEditing(true)}
-                  variant="ghost"
-                  size="sm"
-                >
-                  <Icon name="Edit" size={16} />
-                </Button>
-              </div>
-            )}
-          </div>
-        )}
+            </div>
+          ) : (
+            <>
+              {/* Обычный режим */}
+              {isCompleted ? (
+                <div className="text-center">
+                  <Icon
+                    name="Check"
+                    size={32}
+                    className="text-green-500 mx-auto mb-2"
+                  />
+                  <p className="text-green-700 font-semibold">{correctWord}</p>
+                </div>
+              ) : isUnlocked ? (
+                <form onSubmit={handleSubmit} className="text-center">
+                  <div className="mb-4">
+                    <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2 bg-slate-200">
+                      <Icon
+                        name="HelpCircle"
+                        size={24}
+                        className="text-primary"
+                      />
+                    </div>
+                    <p className="text-sm text-gray-600">Узел #{id}</p>
+                  </div>
+                  <Input
+                    value={userInput}
+                    onChange={(e) => setUserInput(e.target.value)}
+                    placeholder="Введите слово"
+                    className="text-center mb-3 w-32"
+                    disabled={!isUnlocked}
+                  />
+                  <Button type="submit" size="sm" disabled={!userInput.trim()}>
+                    Проверить
+                  </Button>
+                </form>
+              ) : (
+                <div className="text-center">
+                  <Icon
+                    name="Lock"
+                    size={32}
+                    className="text-gray-400 mx-auto mb-2"
+                  />
+                  <p className="text-gray-500 text-sm">Заблокировано</p>
+                </div>
+              )}
+            </>
+          )}
 
-        {/* Основная форма ввода */}
-        {isCompleted ? (
-          <div className="text-center">
-            <div className="text-green-600 mb-2">
-              <Icon name="CheckCircle" size={32} className="mx-auto" />
-            </div>
-            <p className="text-lg font-semibold text-gray-800">{word.word}</p>
-            <p className="text-sm text-green-600 mt-1">Правильно!</p>
-          </div>
-        ) : !isDisabled ? (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="text-center mb-4">
-              <p className="text-sm text-gray-600">Введите слово:</p>
-            </div>
-            <Input
-              type="text"
-              value={userInput}
-              onChange={(e) => setUserInput(e.target.value)}
-              placeholder="Ваш ответ..."
-              className="text-center text-lg"
-              disabled={isDisabled}
-            />
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={!userInput.trim() || isDisabled}
+          {/* Обратная связь */}
+          {showFeedback && (
+            <div
+              className={`absolute -bottom-12 left-1/2 transform -translate-x-1/2 px-3 py-1 rounded-full text-sm font-medium ${
+                isCompleted
+                  ? "bg-green-100 text-green-800"
+                  : "bg-red-100 text-red-800"
+              }`}
             >
-              Проверить
-            </Button>
-          </form>
-        ) : (
-          <div className="text-center text-gray-500">
-            <Icon name="Lock" size={32} className="mx-auto mb-2" />
-            <p>Разблокируется после предыдущего слова</p>
-          </div>
-        )}
-
-        {/* Обратная связь */}
-        {showFeedback && (
-          <div
-            className={`mt-4 p-3 rounded text-center ${
-              isCompleted
-                ? "bg-green-100 text-green-800"
-                : "bg-red-100 text-red-800"
-            }`}
-          >
-            {isCompleted
-              ? "Правильно! ✅"
-              : "Неправильно, попробуйте еще раз ❌"}
-          </div>
-        )}
+              {isCompleted ? "✓ Правильно!" : "✗ Попробуй еще"}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
