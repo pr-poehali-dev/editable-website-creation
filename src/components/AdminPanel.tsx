@@ -46,6 +46,29 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
     );
   };
 
+  const handleAddHint = (wordId: number) => {
+    onUpdateWords(
+      words.map((w) =>
+        w.id === wordId
+          ? {
+              ...w,
+              hint: {
+                text: "Новая подсказка",
+                position: { x: 200, y: 100 },
+                size: "medium" as const,
+              },
+            }
+          : w,
+      ),
+    );
+  };
+
+  const handleRemoveHint = (wordId: number) => {
+    onUpdateWords(
+      words.map((w) => (w.id === wordId ? { ...w, hint: undefined } : w)),
+    );
+  };
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <Card className="w-96 max-h-[80vh] flex flex-col">
@@ -86,6 +109,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                 index={index + 1}
                 onUpdate={handleUpdateWord}
                 onRemove={handleRemoveWord}
+                onAddHint={handleAddHint}
+                onRemoveHint={handleRemoveHint}
               />
             ))}
 
@@ -106,6 +131,8 @@ interface WordItemProps {
   index: number;
   onUpdate: (id: number, newWord: string) => void;
   onRemove: (id: number) => void;
+  onAddHint: (id: number) => void;
+  onRemoveHint: (id: number) => void;
 }
 
 const WordItem: React.FC<WordItemProps> = ({
@@ -113,6 +140,8 @@ const WordItem: React.FC<WordItemProps> = ({
   index,
   onUpdate,
   onRemove,
+  onAddHint,
+  onRemoveHint,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(word.word);
@@ -152,9 +181,31 @@ const WordItem: React.FC<WordItemProps> = ({
       ) : (
         <>
           <span className="flex-1 font-medium">{word.word}</span>
+          {word.hint && (
+            <span className="text-xs bg-yellow-100 px-2 py-1 rounded">
+              Подсказка: {word.hint.text.slice(0, 20)}...
+            </span>
+          )}
           <Button size="sm" variant="ghost" onClick={() => setIsEditing(true)}>
             <Icon name="Edit" size={16} />
           </Button>
+          {word.hint ? (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => onRemoveHint(word.id)}
+            >
+              <Icon name="Flag" size={16} className="text-yellow-500" />
+            </Button>
+          ) : (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => onAddHint(word.id)}
+            >
+              <Icon name="Plus" size={16} className="text-gray-400" />
+            </Button>
+          )}
           <Button size="sm" variant="ghost" onClick={() => onRemove(word.id)}>
             <Icon name="Trash2" size={16} />
           </Button>
