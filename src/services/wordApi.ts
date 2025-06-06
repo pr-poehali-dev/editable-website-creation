@@ -59,15 +59,25 @@ class WordAPI {
     }
   }
 
-  async updateWords(words: Word[]): Promise<void> {
+  async saveWords(words: Word[]): Promise<void> {
     try {
       // Сохраняем в sessionStorage (имитация глобального API)
       sessionStorage.setItem(GLOBAL_STORAGE_KEY, JSON.stringify(words));
       this.globalData = words;
+
+      // Уведомляем другие компоненты об изменениях
+      const event = new CustomEvent("wordsUpdated", {
+        detail: { words },
+      });
+      window.dispatchEvent(event);
     } catch (error) {
-      console.error("Ошибка обновления слов:", error);
+      console.error("Ошибка сохранения слов:", error);
       throw error;
     }
+  }
+
+  async updateWords(words: Word[]): Promise<void> {
+    return this.saveWords(words);
   }
 
   async updateWord(id: number, newWord: string): Promise<void> {

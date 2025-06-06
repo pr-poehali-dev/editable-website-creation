@@ -4,33 +4,39 @@ import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
 
 interface TreeNodeProps {
-  id: number;
-  correctWord: string;
-  isUnlocked: boolean;
+  word: {
+    id: number;
+    word: string;
+    hint?: {
+      text: string;
+      position: { x: number; y: number };
+      size: "small" | "medium" | "large";
+    };
+  };
   isCompleted: boolean;
+  isDisabled: boolean;
   onComplete: (id: number, word: string) => void;
   isAdmin: boolean;
   onUpdateWord: (id: number, newWord: string) => void;
 }
 
 const TreeNode: React.FC<TreeNodeProps> = ({
-  id,
-  correctWord,
-  isUnlocked,
+  word,
   isCompleted,
+  isDisabled,
   onComplete,
   isAdmin,
   onUpdateWord,
 }) => {
   const [userInput, setUserInput] = useState("");
   const [isEditing, setIsEditing] = useState(false);
-  const [editWord, setEditWord] = useState(correctWord);
+  const [editWord, setEditWord] = useState(word.word);
   const [showFeedback, setShowFeedback] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (userInput.toLowerCase().trim() === correctWord.toLowerCase().trim()) {
-      onComplete(id, userInput);
+    if (userInput.toLowerCase().trim() === word.word.toLowerCase().trim()) {
+      onComplete(word.id, userInput);
       setShowFeedback(true);
       setTimeout(() => setShowFeedback(false), 2000);
     } else {
@@ -41,18 +47,18 @@ const TreeNode: React.FC<TreeNodeProps> = ({
   };
 
   const handleEditSave = () => {
-    onUpdateWord(id, editWord);
+    onUpdateWord(word.id, editWord);
     setIsEditing(false);
   };
 
   return (
     <div
-      className={`relative transition-all duration-500 ${isUnlocked ? "opacity-100" : "opacity-40"}`}
+      className={`relative transition-all duration-500 ${!isDisabled ? "opacity-100" : "opacity-40"}`}
     >
       <div className="bg-white rounded-lg shadow-lg p-6 border-2 border-gray-200">
         {/* Номер узла */}
         <div className="absolute -top-3 -left-3 w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold text-sm">
-          {id}
+          {word.id}
         </div>
 
         {/* Админ режим редактирования */}
@@ -79,7 +85,7 @@ const TreeNode: React.FC<TreeNodeProps> = ({
             ) : (
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">
-                  Правильное слово: {correctWord}
+                  Правильное слово: {word.word}
                 </span>
                 <Button
                   onClick={() => setIsEditing(true)}
@@ -99,10 +105,10 @@ const TreeNode: React.FC<TreeNodeProps> = ({
             <div className="text-green-600 mb-2">
               <Icon name="CheckCircle" size={32} className="mx-auto" />
             </div>
-            <p className="text-lg font-semibold text-gray-800">{correctWord}</p>
+            <p className="text-lg font-semibold text-gray-800">{word.word}</p>
             <p className="text-sm text-green-600 mt-1">Правильно!</p>
           </div>
-        ) : isUnlocked ? (
+        ) : !isDisabled ? (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="text-center mb-4">
               <p className="text-sm text-gray-600">Введите слово:</p>
@@ -113,12 +119,12 @@ const TreeNode: React.FC<TreeNodeProps> = ({
               onChange={(e) => setUserInput(e.target.value)}
               placeholder="Ваш ответ..."
               className="text-center text-lg"
-              disabled={!isUnlocked}
+              disabled={isDisabled}
             />
             <Button
               type="submit"
               className="w-full"
-              disabled={!userInput.trim() || !isUnlocked}
+              disabled={!userInput.trim() || isDisabled}
             >
               Проверить
             </Button>

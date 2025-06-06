@@ -13,6 +13,11 @@ import Icon from "@/components/ui/icon";
 interface Word {
   id: number;
   word: string;
+  hint?: {
+    text: string;
+    position: { x: number; y: number };
+    size: "small" | "medium" | "large";
+  };
 }
 
 interface AdminPanelProps {
