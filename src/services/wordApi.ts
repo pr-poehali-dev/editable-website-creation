@@ -2,11 +2,6 @@
 interface Word {
   id: number;
   word: string;
-  hint?: {
-    text: string;
-    position: { x: number; y: number };
-    size: "small" | "medium" | "large";
-  };
 }
 
 // Используем простой глобальный объект для демонстрации
@@ -18,24 +13,8 @@ class WordAPI {
 
   // Fallback к глобальному хранилищу в памяти для демо
   private globalData: Word[] = [
-    {
-      id: 1,
-      word: "солнце",
-      hint: {
-        text: "Ночное светило появляется после дня",
-        position: { x: 200, y: 100 },
-        size: "medium",
-      },
-    },
-    {
-      id: 2,
-      word: "луна",
-      hint: {
-        text: "Мерцающие точки на небе",
-        position: { x: 300, y: 150 },
-        size: "small",
-      },
-    },
+    { id: 1, word: "солнце" },
+    { id: 2, word: "луна" },
     { id: 3, word: "звезды" },
   ];
 
