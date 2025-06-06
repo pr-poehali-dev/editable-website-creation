@@ -13,6 +13,8 @@ interface WordTreeProps {
   isAdmin: boolean;
   onOpenAdminPanel: () => void;
   onUpdateWord: (id: number, newWord: string) => void;
+  onShowAdminAuth: () => void;
+  onLogout: () => void;
 }
 
 const WordTree: React.FC<WordTreeProps> = ({
@@ -20,6 +22,8 @@ const WordTree: React.FC<WordTreeProps> = ({
   isAdmin,
   onOpenAdminPanel,
   onUpdateWord,
+  onShowAdminAuth,
+  onLogout,
 }) => {
   const [completedNodes, setCompletedNodes] = useState<Set<number>>(new Set());
   const [progress, setProgress] = useState(0);
@@ -66,10 +70,25 @@ const WordTree: React.FC<WordTreeProps> = ({
           </div>
 
           <div className="flex space-x-2">
-            {isAdmin && (
-              <Button variant="outline" onClick={onOpenAdminPanel}>
-                <Icon name="Settings" size={16} />
-                Настройки
+            {isAdmin ? (
+              <>
+                <Button variant="outline" onClick={onOpenAdminPanel}>
+                  <Icon name="Settings" size={16} />
+                  Настройки
+                </Button>
+                <Button variant="outline" onClick={onLogout}>
+                  <Icon name="LogOut" size={16} />
+                  Выйти
+                </Button>
+              </>
+            ) : (
+              <Button
+                variant="outline"
+                onClick={onShowAdminAuth}
+                className="bg-white/90 backdrop-blur-sm"
+              >
+                <Icon name="Key" size={16} />
+                Админ
               </Button>
             )}
             <Button variant="outline" onClick={resetProgress}>

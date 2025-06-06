@@ -54,33 +54,14 @@ const Index = () => {
 
   return (
     <div className="min-h-screen">
-      {/* Кнопка админа */}
-      <div className="fixed top-4 right-4 z-30">
-        {isAdmin ? (
-          <div className="flex space-x-2">
-            <Button variant="outline" onClick={handleLogout}>
-              <Icon name="LogOut" size={16} />
-              Выйти
-            </Button>
-          </div>
-        ) : (
-          <Button
-            variant="outline"
-            onClick={() => setShowAdminAuth(true)}
-            className="bg-white/90 backdrop-blur-sm"
-          >
-            <Icon name="Key" size={16} />
-            Админ
-          </Button>
-        )}
-      </div>
-
       {/* Основной контент */}
       <WordTree
         words={words}
         isAdmin={isAdmin}
         onOpenAdminPanel={() => setShowAdminPanel(true)}
         onUpdateWord={handleUpdateWord}
+        onShowAdminAuth={() => setShowAdminAuth(true)}
+        onLogout={handleLogout}
       />
 
       {/* Модальные окна */}
